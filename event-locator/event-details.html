@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Locator - Event Details</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-calendar-alt me-2"></i>Event Locator
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="events.html">Events</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Event Details</h2>
+                    <a href="events.html" class="back-btn">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Events
+                    </a>
+                </div>
+                
+                <div id="event-details-container">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+        // Initialize event details page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadEventDetails();
+        });
+
+        // Load event details from URL parameter
+        function loadEventDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('id');
+            
+            if (!eventId) {
+                showErrorMessage('No event ID provided');
+                return;
+            }
+
+            const event = eventData.find(e => e.id === parseInt(eventId));
+            if (!event) {
+                showErrorMessage('Event not found');
+                return;
+            }
+
+            displayEventDetails(event);
+        }
+
+        // Display event details
+        function displayEventDetails(event) {
+            const container = document.getElementById('event-details-container');
+            container.innerHTML = `
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card event-card">
+                            <div class="event-image" style="background-image: url('${event.image}'); height: 300px;">
+                                <div class="event-category">${event.category}</div>
+                            </div>
+                            <div class="card-body">
+                                <h2 class="card-title">${event.name}</h2>
+                                <p class="lead">${event.description}</p>
+                                
+                                <div class="row mt-4">
+                                    <div class="col-md-6">
+                                        <h5>Event Details</h5>
+                                        <p><strong>Date:</strong> ${formatDate(event.date)}</p>
+                                        <p><strong>Time:</strong> ${event.time}</p>
+                                        <p><strong>Location:</strong> ${event.location}</p>
+                                        <p><strong>Category:</strong> ${event.category}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h5>Additional Information</h5>
+                                        <p><strong>Organizer:</strong> ${event.organizer}</p>
+                                        <p><strong>Capacity:</strong> ${event.capacity}</p>
+                                        <p><strong>Price:</strong> ${event.price}</p>
+                                        <div class="mt-3">
+                                            <strong>Tags:</strong><br>
+                                            ${event.tags.map(tag => `<span class="badge bg-secondary me-1">${tag}</span>`).join('')}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Quick Actions</h5>
+                                <button class="btn btn-primary w-100 mb-2" onclick="buyTickets(${event.id})">
+                                    <i class="fas fa-ticket-alt me-2"></i>Buy Tickets
+                                </button>
+                                <button class="btn btn-outline-primary w-100 mb-2" onclick="addToFavorites(${event.id})">
+                                    <i class="fas fa-heart me-2"></i>Add to Favorites
+                                </button>
+                                <button class="btn btn-outline-secondary w-100" onclick="shareEvent(${event.id})">
+                                    <i class="fas fa-share me-2"></i>Share Event
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <h5 class="card-title">Location</h5>
+                                <p class="text-muted">${event.location}</p>
+                                <div class="bg-light p-3 rounded text-center">
+                                    <i class="fas fa-map-marker-alt fa-2x text-primary mb-2"></i>
+                                    <p class="mb-0">Interactive map would be displayed here</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <h5 class="card-title">Similar Events</h5>
+                                <div id="similar-events">
+                                    <!-- Similar events will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Load similar events
+            loadSimilarEvents(event);
+        }
+
+        // Load similar events
+        function loadSimilarEvents(currentEvent) {
+            const similarEvents = eventData
+                .filter(event => event.id !== currentEvent.id && event.category === currentEvent.category)
+                .slice(0, 3);
+
+            const container = document.getElementById('similar-events');
+            
+            if (similarEvents.length === 0) {
+                container.innerHTML = '<p class="text-muted">No similar events found.</p>';
+                return;
+            }
+
+            container.innerHTML = similarEvents.map(event => `
+                <div class="card mb-2" style="cursor: pointer;" onclick="window.location.href='event-details.html?id=${event.id}'">
+                    <div class="card-body p-3">
+                        <h6 class="card-title mb-1">${event.name}</h6>
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>
+                            ${formatDate(event.date)}
+                        </small>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Show error message
+        function showErrorMessage(message) {
+            const container = document.getElementById('event-details-container');
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h3>Error</h3>
+                    <p class="text-muted">${message}</p>
+                    <a href="events.html" class="btn btn-primary">View All Events</a>
+                </div>
+            `;
+        }
+
+        // Action functions
+        function buyTickets(eventId) {
+            alert('Buy tickets functionality would be implemented here');
+        }
+
+        function addToFavorites(eventId) {
+            alert('Add to favorites functionality would be implemented here');
+        }
+
+        function shareEvent(eventId) {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Check out this event!',
+                    url: window.location.href
+                });
+            } else {
+                // Fallback for browsers that don't support Web Share API
+                const url = window.location.href;
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('Event URL copied to clipboard!');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

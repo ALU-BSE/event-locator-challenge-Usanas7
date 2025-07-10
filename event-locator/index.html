@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Locator - Home</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-calendar-alt me-2"></i>Event Locator
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="events.html">Events</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    
+    <div class="hero-section">
+        <div class="container">
+            <h1 class="display-4 mb-4">Discover Amazing Events</h1>
+            <p class="lead">Find the perfect events happening in your city</p>
+        </div>
+    </div>
+    
+    
+    <div class="container">
+        <div class="filter-section">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="searchInput" class="form-label">Search Events</label>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search by event name...">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="dateFilter" class="form-label">Filter by Date</label>
+                    <input type="date" class="form-control" id="dateFilter">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="categoryFilter" class="form-label">Category</label>
+                    <select class="form-select" id="categoryFilter">
+                        <option value="">All Categories</option>
+                        <option value="Music">Music</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Sports">Sports</option>
+                        <option value="Arts">Arts</option>
+                        <option value="Food">Food</option>
+                        <option value="Business">Business</option>
+                    </select>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label class="form-label">&nbsp;</label>
+                    <button class="btn search-btn w-100" onclick="searchEvents()">
+                        <i class="fas fa-search me-2"></i>Search
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="container my-5">
+        <h2 class="text-center mb-5">Featured Events</h2>
+        <div id="featured-events" class="row">
+            
+        </div>
+        <div class="text-center mt-4">
+            <a href="events.html" class="btn btn-primary btn-lg">View All Events</a>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            displayFeaturedEvents();
+        });
+
+        
+        function searchEvents() {
+            const searchTerm = document.getElementById('searchInput').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            const categoryFilter = document.getElementById('categoryFilter').value;
+
+            
+            const params = new URLSearchParams();
+            if (searchTerm) params.append('search', searchTerm);
+            if (dateFilter) params.append('date', dateFilter);
+            if (categoryFilter) params.append('category', categoryFilter);
+
+            // Redirect to events page with search parameters
+            window.location.href = `events.html?${params.toString()}`;
+        }
+
+        
+        function displayFeaturedEvents() {
+            const container = document.getElementById('featured-events');
+            const featuredEvents = eventData.slice(0, 3);
+            
+            container.innerHTML = featuredEvents.map(event => `
+                <div class="col-md-4">
+                    <div class="card event-card" onclick="window.location.href='event-details.html?id=${event.id}'">
+                        <div class="event-image" style="background-image: url('${event.image}')">
+                            <div class="event-category">${event.category}</div>
+                        </div>
+                        <div class="event-date">
+                            ${formatDate(event.date)} • ${event.time}
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">${event.name}</h5>
+                            <p class="event-location">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                ${event.location}
+                            </p>
+                            <p class="card-text">${event.description.substring(0, 100)}...</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="event-price">${event.price}</span>
+                                <small class="text-muted">
+                                    <i class="fas fa-users me-1"></i>
+                                    ${event.capacity}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

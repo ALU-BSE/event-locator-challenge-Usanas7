@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Locator - Events</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+   
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-calendar-alt me-2"></i>Event Locator
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="events.html">Events</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>All Events</h2>
+                    <a href="index.html" class="back-btn">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Home
+                    </a>
+                </div>
+
+                
+                <div class="filter-section mb-4">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="searchInput" class="form-label">Search Events</label>
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search by event name...">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="dateFilter" class="form-label">Filter by Date</label>
+                            <input type="date" class="form-control" id="dateFilter">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="categoryFilter" class="form-label">Category</label>
+                            <select class="form-select" id="categoryFilter">
+                                <option value="">All Categories</option>
+                                <option value="Music">Music</option>
+                                <option value="Technology">Technology</option>
+                                <option value="Sports">Sports</option>
+                                <option value="Arts">Arts</option>
+                                <option value="Food">Food</option>
+                                <option value="Business">Business</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">&nbsp;</label>
+                            <button class="btn search-btn w-100" onclick="filterEvents()">
+                                <i class="fas fa-search me-2"></i>Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+               
+                <div id="events-results" class="mb-3">
+                    <span id="results-count" class="text-muted"></span>
+                </div>
+
+                
+                <div id="events-container" class="row">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+        let filteredEvents = [...eventData];
+
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSearchParams();
+            displayEvents(filteredEvents);
+        });
+
+        
+        function loadSearchParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            if (urlParams.has('search')) {
+                document.getElementById('searchInput').value = urlParams.get('search');
+            }
+            if (urlParams.has('date')) {
+                document.getElementById('dateFilter').value = urlParams.get('date');
+            }
+            if (urlParams.has('category')) {
+                document.getElementById('categoryFilter').value = urlParams.get('category');
+            }
+            
+            
+            if (urlParams.toString()) {
+                filterEvents();
+            }
+        }
+
+        
+        function filterEvents() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const dateFilter = document.getElementById('dateFilter').value;
+            const categoryFilter = document.getElementById('categoryFilter').value;
+
+            filteredEvents = eventData.filter(event => {
+                const matchesSearch = event.name.toLowerCase().includes(searchTerm) || 
+                                    event.description.toLowerCase().includes(searchTerm);
+                const matchesDate = !dateFilter || event.date === dateFilter;
+                const matchesCategory = !categoryFilter || event.category === categoryFilter;
+                
+                return matchesSearch && matchesDate && matchesCategory;
+            });
+
+            displayEvents(filteredEvents);
+        }
+
+        
+        function displayEvents(events) {
+            const container = document.getElementById('events-container');
+            const resultsCount = document.getElementById('results-count');
+            
+            resultsCount.textContent = `Showing ${events.length} event${events.length !== 1 ? 's' : ''}`;
+            
+            if (events.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12">
+                        <div class="no-events">
+                            <i class="fas fa-calendar-times fa-5x mb-3"></i>
+                            <h3>No Events Found</h3>
+                            <p>Try adjusting your search criteria or browse all events.</p>
+                            <button class="btn btn-primary" onclick="clearFilters()">Clear Filters</button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = events.map(event => `
+                <div class="col-md-6 col-lg-4">
+                    <div class="card event-card" onclick="window.location.href='event-details.html?id=${event.id}'">
+                        <div class="event-image" style="background-image: url('${event.image}')">
+                            <div class="event-category">${event.category}</div>
+                        </div>
+                        <div class="event-date">
+                            ${formatDate(event.date)} • ${event.time}
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">${event.name}</h5>
+                            <p class="event-location">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                ${event.location}
+                            </p>
+                            <p class="card-text">${event.description.substring(0, 100)}...</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="event-price">${event.price}</span>
+                                <small class="text-muted">
+                                    <i class="fas fa-users me-1"></i>
+                                    ${event.capacity}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('dateFilter').value = '';
+            document.getElementById('categoryFilter').value = '';
+            filteredEvents = [...eventData];
+            displayEvents(filteredEvents);
+        }
+
+        
+        document.getElementById('searchInput').addEventListener('input', filterEvents);
+        document.getElementById('dateFilter').addEventListener('change', filterEvents);
+        document.getElementById('categoryFilter').addEventListener('change', filterEvents);
+    </script>
+</body>
+</html>
